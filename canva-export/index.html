@@ -1,0 +1,315 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>냥붕비 개발 과정</title>
+    <style>
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        font-family: "Arial", "Malgun Gothic", sans-serif;
+        background: #7b3f2c;
+        color: #3a2014;
+      }
+      .page {
+        width: 1920px;
+        height: 1080px;
+        position: relative;
+        overflow: hidden;
+        padding: 90px 110px;
+        background:
+          linear-gradient(90deg, rgba(106, 50, 31, .18) 1px, transparent 1px) 0 0 / 120px 120px,
+          linear-gradient(180deg, #c15d3f 0 18%, #f1c17a 18% 22%, #a9d0c9 22% 72%, #8b4f2e 72% 100%);
+      }
+      .page::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 120px;
+        height: 150px;
+        background:
+          radial-gradient(80px 58px at 65px 142px, #ffe2a0 0 96%, transparent 97%),
+          repeating-linear-gradient(90deg, #bd5337 0 120px, #ffe7ad 120px 240px);
+        filter: drop-shadow(0 10px 0 rgba(82, 36, 20, .25));
+      }
+      .content {
+        position: relative;
+        z-index: 2;
+        height: 100%;
+        display: grid;
+        grid-template-columns: 1.05fr .95fr;
+        gap: 80px;
+        align-items: center;
+      }
+      .panel {
+        border: 8px solid #4a2819;
+        border-radius: 34px;
+        background: linear-gradient(180deg, #fff7dc, #ffe8ae);
+        box-shadow: inset 0 0 0 8px rgba(255,255,255,.45), 0 14px 0 rgba(73,39,24,.32);
+        padding: 56px;
+      }
+      h1 {
+        margin: 0;
+        font-size: 94px;
+        line-height: 1.02;
+        letter-spacing: 0;
+        color: #fff3cf;
+        text-shadow: 0 9px 0 #5d2a1a, 3px 0 0 #5d2a1a, -3px 0 0 #5d2a1a;
+      }
+      h2 {
+        margin: 0 0 28px;
+        font-size: 62px;
+        line-height: 1.08;
+        letter-spacing: 0;
+      }
+      p, li {
+        font-size: 34px;
+        line-height: 1.42;
+        font-weight: 800;
+      }
+      ul {
+        margin: 0;
+        padding-left: 42px;
+      }
+      .eyebrow {
+        display: inline-block;
+        margin-bottom: 24px;
+        border: 6px solid #4a2819;
+        border-radius: 999px;
+        background: #ffd04d;
+        padding: 10px 26px;
+        font-size: 30px;
+        font-weight: 1000;
+      }
+      .cat {
+        width: 600px;
+        max-height: 680px;
+        object-fit: contain;
+        filter: drop-shadow(0 28px 0 rgba(83, 36, 20, .18));
+      }
+      .cat.jump {
+        width: 720px;
+        transform: rotate(-10deg);
+      }
+      .cards {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 24px;
+      }
+      .mini {
+        border: 6px solid #4a2819;
+        border-radius: 24px;
+        background: #fff8e8;
+        padding: 28px;
+        min-height: 190px;
+      }
+      .mini strong {
+        display: block;
+        margin-bottom: 12px;
+        font-size: 32px;
+      }
+      .mini span {
+        font-size: 26px;
+        font-weight: 800;
+      }
+      .timeline {
+        display: grid;
+        gap: 22px;
+      }
+      .step {
+        display: grid;
+        grid-template-columns: 74px 1fr;
+        gap: 20px;
+        align-items: center;
+      }
+      .num {
+        width: 74px;
+        height: 74px;
+        display: grid;
+        place-items: center;
+        border: 6px solid #4a2819;
+        border-radius: 50%;
+        background: #ff8a00;
+        font-size: 34px;
+        font-weight: 1000;
+      }
+      .device {
+        width: 520px;
+        height: 780px;
+        border: 10px solid #4a2819;
+        border-radius: 44px;
+        background: linear-gradient(180deg, #c76d4d 0 16%, #f7db99 16% 19%, #afd3cf 19% 74%, #7b4529 74%);
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 20px 0 rgba(73,39,24,.28);
+      }
+      .device .score {
+        position: absolute;
+        left: 28px;
+        top: 28px;
+        border: 5px solid #4a2819;
+        border-radius: 20px;
+        background: #fff7dc;
+        padding: 18px 30px;
+        font-size: 32px;
+        font-weight: 1000;
+      }
+      .device .order {
+        position: absolute;
+        left: 50px;
+        right: 50px;
+        top: 150px;
+        border: 5px solid #a86224;
+        border-radius: 26px;
+        background: #fff7dc;
+        padding: 28px;
+        text-align: center;
+        font-size: 36px;
+        font-weight: 1000;
+      }
+      .device img {
+        position: absolute;
+        left: 32px;
+        bottom: 130px;
+        width: 320px;
+      }
+      .footer {
+        position: absolute;
+        left: 110px;
+        right: 110px;
+        bottom: 56px;
+        z-index: 3;
+        display: flex;
+        justify-content: space-between;
+        color: #ffe8ae;
+        font-size: 24px;
+        font-weight: 900;
+      }
+    </style>
+  </head>
+  <body>
+    <section class="page" data-document-role="page" data-label="표지">
+      <div class="content">
+        <div>
+          <span class="eyebrow">Mobile Game MVP</span>
+          <h1>냥붕비<br />개발 과정</h1>
+          <p style="color:#fff7dc;text-shadow:0 3px 0 #5d2a1a;">붕어빵 주문 게임이 고양이 점프 캐치 게임으로 발전한 흐름</p>
+        </div>
+        <img class="cat jump" src="cat-jump.png" alt="점프 고양이" />
+      </div>
+      <div class="footer"><span>Codex + Canva Export</span><span>2026.08.04</span></div>
+    </section>
+
+    <section class="page" data-document-role="page" data-label="초기 PRD">
+      <div class="content">
+        <div class="panel">
+          <h2>초기 PRD</h2>
+          <ul>
+            <li>한 손가락으로 가능한 모바일 타이밍 게임</li>
+            <li>주문, 붕어빵 선택, 굽기 판정, 점수 획득</li>
+            <li>최고 점수와 리더보드 중심의 반복 플레이</li>
+          </ul>
+        </div>
+        <div class="device">
+          <div class="score">점수 0</div>
+          <div class="order">주문: 팥 2개</div>
+          <img src="cat-sit.png" alt="앉은 고양이" />
+        </div>
+      </div>
+    </section>
+
+    <section class="page" data-document-role="page" data-label="게임 구조 변화">
+      <div class="content">
+        <div class="panel">
+          <h2>게임 구조 변화</h2>
+          <div class="timeline">
+            <div class="step"><div class="num">1</div><p>게이지 타이밍 방식으로 MVP 구현</p></div>
+            <div class="step"><div class="num">2</div><p>회전식 붕어빵 기계 아이디어 반영</p></div>
+            <div class="step"><div class="num">3</div><p>고양이가 붕어빵을 잡는 액션 게임으로 전환</p></div>
+          </div>
+        </div>
+        <img class="cat" src="cat-sit.png" alt="앉은 고양이" />
+      </div>
+    </section>
+
+    <section class="page" data-document-role="page" data-label="현재 플레이 루프">
+      <div class="content">
+        <div class="panel">
+          <h2>현재 플레이 루프</h2>
+          <ul>
+            <li>말풍선에 주문 순서 표시</li>
+            <li>붕어빵이 오른쪽에서 왼쪽으로 이동</li>
+            <li>화면 터치 시 고양이가 점프</li>
+            <li>순서가 맞으면 점수와 콤보 증가</li>
+          </ul>
+        </div>
+        <img class="cat jump" src="cat-jump.png" alt="점프 고양이" />
+      </div>
+    </section>
+
+    <section class="page" data-document-role="page" data-label="에셋 전환">
+      <div class="content">
+        <div class="panel">
+          <h2>CSS 캐릭터에서 PNG 캐릭터로</h2>
+          <div class="cards">
+            <div class="mini"><strong>Before</strong><span>CSS 도형으로 고양이를 구성해 빠르게 테스트</span></div>
+            <div class="mini"><strong>After</strong><span>투명 PNG 스프라이트로 캐릭터 품질 개선</span></div>
+            <div class="mini"><strong>Idle</strong><span>평소에는 앉아있는 고양이 이미지</span></div>
+            <div class="mini"><strong>Jump</strong><span>점프 순간에는 별도 액션 이미지</span></div>
+          </div>
+        </div>
+        <div style="display:grid;justify-items:center;gap:20px;">
+          <img class="cat" style="width:420px;" src="cat-sit.png" alt="앉은 고양이" />
+          <img class="cat jump" style="width:520px;" src="cat-jump.png" alt="점프 고양이" />
+        </div>
+      </div>
+    </section>
+
+    <section class="page" data-document-role="page" data-label="구현 포인트">
+      <div class="content">
+        <div class="panel">
+          <h2>구현 포인트</h2>
+          <ul>
+            <li>Zustand로 게임 상태 관리</li>
+            <li>requestAnimationFrame 기반 이동 처리</li>
+            <li>주문 배열과 현재 인덱스로 순서 판정</li>
+            <li>점프 상태에 따라 고양이 이미지 교체</li>
+          </ul>
+        </div>
+        <div class="panel">
+          <h2>이미지 파일</h2>
+          <p><b>cat-sit.png</b><br />대기 상태</p>
+          <p><b>cat-jump.png</b><br />점프 상태</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="page" data-document-role="page" data-label="다음 작업">
+      <div class="content">
+        <div class="panel">
+          <h2>다음 작업</h2>
+          <ul>
+            <li>붕어빵 이미지도 PNG 스프라이트화</li>
+            <li>주문 UI와 하단 HUD 디자인 정리</li>
+            <li>점프 타이밍과 난이도 밸런싱</li>
+            <li>사운드와 성공/실패 연출 추가</li>
+          </ul>
+        </div>
+        <img class="cat jump" src="cat-jump.png" alt="점프 고양이" />
+      </div>
+    </section>
+
+    <section class="page" data-document-role="page" data-label="마무리">
+      <div class="content">
+        <div>
+          <span class="eyebrow">Current Direction</span>
+          <h1>기능 먼저,<br />그림은 점진 개선</h1>
+          <p style="color:#fff7dc;text-shadow:0 3px 0 #5d2a1a;">플레이 루프를 먼저 단단히 만들고, 캐릭터와 붕어빵 에셋을 차례로 교체합니다.</p>
+        </div>
+        <img class="cat" src="cat-sit.png" alt="앉은 고양이" />
+      </div>
+    </section>
+  </body>
+</html>
