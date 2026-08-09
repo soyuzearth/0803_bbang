@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>붕어빵 먹는 고양이</title>
+    <link rel="stylesheet" href="./styles.css?v=21" />
+  </head>
+  <body>
+    <main class="shell">
+      <section class="game" id="game" aria-label="붕어빵 먹는 고양이 게임 화면">
+        <div class="map-art"></div>
+        <div class="snowfall" aria-hidden="true"></div>
+        <div class="snow-lane"></div>
+
+        <section class="topbar" aria-label="게임 상태">
+          <h1>붕어빵 먹는 고양이</h1>
+          <div class="stat"><span>목숨</span><strong id="lives">♡♡♡</strong></div>
+          <div class="stat"><span>점수</span><strong id="score">0</strong></div>
+          <div class="stat"><span>콤보</span><strong id="combo">x1</strong></div>
+          <button class="stat rank-trigger" id="bestStat" type="button">
+            <span>최고</span><strong id="best">0</strong>
+          </button>
+        </section>
+
+        <div class="cat cat-runner" id="cat" role="img" aria-label="달리는 고양이"></div>
+        <div class="ground"></div>
+        <div class="overlay" id="overlay" hidden>
+          <form class="panel" id="scoreForm">
+            <h2 id="overlayTitle">랭킹 등록</h2>
+            <p id="overlayText"></p>
+            <label class="name-label" for="playerName">이름</label>
+            <div class="name-row">
+              <input id="playerName" name="playerName" maxlength="10" autocomplete="nickname" />
+              <button class="save-score" type="submit">저장</button>
+            </div>
+            <ol class="ranking-list" id="rankingList" aria-label="랭킹"></ol>
+          </form>
+        </div>
+      </section>
+
+      <button class="action" id="stateButton" type="button" data-mode="stopped">PLAY</button>
+      <div class="hint">화면 탭은 점프, 일시정지 중 탭은 계속입니다.</div>
+    </main>
+
+    <script src="./game.js?v=21"></script>
+  </body>
+</html>
