@@ -146,10 +146,9 @@ button.stat {
   background:
     radial-gradient(ellipse at 40px 68%, rgba(210, 198, 205, 0.5) 0 14px, transparent 15px),
     radial-gradient(ellipse at 180px 78%, rgba(210, 198, 205, 0.42) 0 10px, transparent 11px),
-    repeating-linear-gradient(90deg, rgba(214, 202, 210, 0.28) 0 2px, transparent 2px 96px),
     linear-gradient(180deg, rgba(255, 255, 255, 0), rgba(252, 246, 242, 0.32));
-  background-size: 260px 100%, 260px 100%, 160px 100%, 100% 100%;
-  background-position: var(--lane-x, 0px) 0, var(--lane-x, 0px) 0, var(--lane-x, 0px) 0, 0 0;
+  background-size: 260px 100%, 260px 100%, 100% 100%;
+  background-position: var(--lane-x, 0px) 0, var(--lane-x, 0px) 0, 0 0;
   pointer-events: none;
 }
 
