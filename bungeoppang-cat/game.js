@@ -33,6 +33,17 @@ const MAX_AIR_BOOSTS = 2;
 const BASE_SPEED_RATIO = 0.22;
 const SPEED_ACCEL_RATIO = 0.0048;
 const MUSIC_STEP_MS = 210;
+const AUDIO_FILES = {
+  bgm: "./assets/audio/bgm.wav",
+  jump: "./assets/audio/jump.wav",
+  boost: "./assets/audio/boost.wav",
+  redbean: "./assets/audio/redbean.wav",
+  custard: "./assets/audio/custard.wav",
+  bag: "./assets/audio/bag.wav",
+  hurt: "./assets/audio/hurt.wav",
+  puddle: "./assets/audio/puddle.wav",
+  gameover: "./assets/audio/gameover.wav",
+};
 
 const state = {
   mode: "stopped",
@@ -63,6 +74,8 @@ const audio = {
   sfxGain: null,
   timer: 0,
   step: 0,
+  elements: {},
+  usingElements: false,
 };
 
 [
@@ -331,10 +344,32 @@ function getGravity() {
 }
 
 function startAudio() {
+  if (startElementAudio()) return;
   const context = getAudioContext();
   if (!context) return;
   if (context.state === "suspended") context.resume();
   startMusic();
+}
+
+function startElementAudio() {
+  const bgm = getAudioElement("bgm");
+  if (!bgm) return false;
+
+  audio.usingElements = true;
+  bgm.loop = true;
+  bgm.volume = 0.22;
+  bgm.play().catch(() => {});
+  return true;
+}
+
+function getAudioElement(name) {
+  if (audio.elements[name]) return audio.elements[name];
+  if (!AUDIO_FILES[name]) return null;
+  const element = document.createElement("audio");
+  element.src = AUDIO_FILES[name];
+  element.preload = "auto";
+  audio.elements[name] = element;
+  return element;
 }
 
 function getAudioContext() {
@@ -363,6 +398,12 @@ function startMusic() {
 }
 
 function stopMusic() {
+  const bgm = audio.elements.bgm;
+  if (bgm) {
+    bgm.pause();
+    bgm.currentTime = 0;
+  }
+
   if (!audio.timer) return;
   window.clearInterval(audio.timer);
   audio.timer = 0;
@@ -391,6 +432,7 @@ function playMusicStep() {
 }
 
 function playSfx(name) {
+  if (playElementSfx(name)) return;
   const context = getAudioContext();
   if (!context || !audio.sfxGain) return;
   const now = context.currentTime;
@@ -420,6 +462,15 @@ function playSfx(name) {
       playTone(freq, now + index * 0.12, 0.16, "sine", audio.sfxGain, 0.13);
     });
   }
+}
+
+function playElementSfx(name) {
+  const source = getAudioElement(name);
+  if (!source) return false;
+  const sound = source.cloneNode();
+  sound.volume = name === "hurt" || name === "puddle" ? 0.42 : 0.52;
+  sound.play().catch(() => {});
+  return true;
 }
 
 function playTone(freq, start, duration, type, destination, volume) {
