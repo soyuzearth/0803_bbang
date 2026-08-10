@@ -409,6 +409,77 @@ button.stat {
   animation: burst-pop 0.62s cubic-bezier(.18, 1.35, .28, 1) forwards;
 }
 
+.title-screen {
+  position: absolute;
+  inset: 0;
+  z-index: 55;
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto;
+  justify-items: center;
+  align-items: start;
+  padding: clamp(18px, 4dvh, 34px) clamp(18px, 4vw, 48px) clamp(24px, 5dvh, 42px);
+  background:
+    linear-gradient(180deg, rgba(34, 40, 105, 0.06), rgba(44, 30, 52, 0.16)),
+    url("./assets/title-key-art.png") center / cover no-repeat;
+}
+
+.title-screen.is-hidden {
+  display: none;
+}
+
+.title-logo {
+  width: min(72%, 760px);
+  max-height: 42%;
+  object-fit: contain;
+  margin-top: clamp(2px, 1.2dvh, 14px);
+  transform-origin: 50% 4%;
+  animation: title-sign-swing 3.2s ease-in-out infinite;
+  filter: drop-shadow(0 10px 10px rgba(50, 23, 13, 0.26));
+  pointer-events: none;
+}
+
+.title-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  justify-content: center;
+}
+
+.title-play,
+.title-sound {
+  border: 2px solid rgba(255, 248, 232, 0.7);
+  border-radius: 999px;
+  color: #fff8e8;
+  font: inherit;
+  font-weight: 950;
+  cursor: pointer;
+  text-shadow: 0 2px 0 rgba(77, 38, 24, 0.35);
+  box-shadow: 0 5px 0 rgba(105, 44, 24, 0.72), 0 12px 22px rgba(54, 31, 20, 0.22);
+}
+
+.title-play {
+  min-width: clamp(96px, 17dvh, 142px);
+  height: clamp(48px, 7.2dvh, 66px);
+  padding: 0 26px;
+  background: linear-gradient(180deg, #ff7848 0%, #d9462b 100%);
+  font-size: clamp(17px, 3dvh, 24px);
+}
+
+.title-sound {
+  min-width: clamp(74px, 12dvh, 104px);
+  height: clamp(38px, 5.6dvh, 50px);
+  padding: 0 16px;
+  background: rgba(255, 253, 246, 0.9);
+  color: #7a3b22;
+  text-shadow: none;
+  font-size: clamp(11px, 1.9dvh, 14px);
+}
+
+.title-sound[data-enabled="true"] {
+  color: #fff8e8;
+  background: linear-gradient(180deg, #5c9b68 0%, #34764d 100%);
+}
+
 .overlay {
   position: absolute;
   inset: 0;
@@ -617,6 +688,16 @@ button.stat {
   }
 }
 
+@keyframes title-sign-swing {
+  0%,
+  100% {
+    transform: rotate(-1.4deg) translateY(0);
+  }
+  50% {
+    transform: rotate(1.4deg) translateY(3px);
+  }
+}
+
 @keyframes feedback-flash {
   0% {
     opacity: 0;
@@ -740,5 +821,15 @@ button.stat {
 
   .hint {
     display: none;
+  }
+
+  .title-screen {
+    padding-top: 10px;
+    padding-bottom: 12px;
+  }
+
+  .title-logo {
+    width: min(58%, 560px);
+    max-height: 36%;
   }
 }

@@ -7,6 +7,9 @@ const overlayTitle = document.getElementById("overlayTitle");
 const overlayText = document.getElementById("overlayText");
 const playerName = document.getElementById("playerName");
 const rankingList = document.getElementById("rankingList");
+const titleScreen = document.getElementById("titleScreen");
+const titleStartButton = document.getElementById("titleStartButton");
+const titleSoundButton = document.getElementById("titleSoundButton");
 const stateButton = document.getElementById("stateButton");
 const soundButton = document.getElementById("soundButton");
 const bestStat = document.getElementById("bestStat");
@@ -99,6 +102,7 @@ setCatSprite("run");
 updateStateButton();
 
 function resetGame() {
+  hideTitleScreen();
   startAudio();
   state.mode = "playing";
   state.score = 0;
@@ -514,6 +518,9 @@ function updateSoundButton() {
   if (!soundButton) return;
   soundButton.textContent = audio.enabled ? "SOUND ON" : "SOUND";
   soundButton.dataset.enabled = audio.enabled ? "true" : "false";
+  if (!titleSoundButton) return;
+  titleSoundButton.textContent = audio.enabled ? "SOUND ON" : "SOUND";
+  titleSoundButton.dataset.enabled = audio.enabled ? "true" : "false";
 }
 
 function playTone(freq, start, duration, type, destination, volume) {
@@ -736,6 +743,11 @@ function hideOverlay() {
   shell.classList.remove("has-overlay");
 }
 
+function hideTitleScreen() {
+  if (!titleScreen) return;
+  titleScreen.classList.add("is-hidden");
+}
+
 function setCatSprite(name) {
   cat.classList.toggle(CAT_RUN_CLASS, name !== "jump");
   cat.classList.toggle(CAT_JUMP_CLASS, name === "jump");
@@ -805,6 +817,8 @@ scoreForm.addEventListener("submit", (event) => {
 
 stateButton.addEventListener("click", toggleStateButton);
 if (soundButton) soundButton.addEventListener("click", toggleSound);
+if (titleStartButton) titleStartButton.addEventListener("click", resetGame);
+if (titleSoundButton) titleSoundButton.addEventListener("click", toggleSound);
 bestStat.addEventListener("click", showRankingPanel);
 game.addEventListener("pointerdown", handleGamePress);
 game.addEventListener("click", handleGamePress);
