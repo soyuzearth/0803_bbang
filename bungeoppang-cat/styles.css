@@ -337,7 +337,7 @@ button.stat {
   bottom: 42%;
   color: var(--button);
   font-weight: 950;
-  font-size: 22px;
+  font-size: clamp(14px, 2.8dvh, 20px);
   text-shadow: 0 2px 0 rgba(255, 255, 255, 0.75);
   pointer-events: none;
   animation: float-up 0.75s ease-out forwards;
@@ -345,20 +345,30 @@ button.stat {
 
 .float-text.combo,
 .float-text.bonus {
-  left: 24%;
-  bottom: 50%;
-  color: #f05a2a;
-  font-size: clamp(26px, 7dvh, 44px);
-  text-shadow: 0 3px 0 #fff6d9, 0 8px 18px rgba(91, 39, 19, 0.22);
+  left: 23%;
+  bottom: 48%;
+  padding: 0.2em 0.48em 0.25em;
+  border: 2px solid rgba(126, 73, 32, 0.18);
+  border-radius: 8px;
+  color: #8a3b1e;
+  background: rgba(255, 247, 210, 0.92);
+  font-size: clamp(17px, 4dvh, 28px);
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.95);
+  box-shadow: 0 6px 14px rgba(88, 47, 24, 0.16);
   animation: float-combo 0.82s ease-out forwards;
 }
 
 .float-text.danger {
   left: 18%;
   bottom: 45%;
+  padding: 0.18em 0.46em 0.24em;
+  border: 2px solid rgba(255, 255, 255, 0.34);
+  border-radius: 8px;
   color: #ffffff;
-  font-size: clamp(24px, 6dvh, 38px);
-  text-shadow: 0 3px 0 #a7281d, 0 10px 18px rgba(91, 22, 12, 0.3);
+  background: rgba(207, 55, 42, 0.86);
+  font-size: clamp(16px, 3.7dvh, 26px);
+  text-shadow: 0 2px 0 rgba(112, 30, 25, 0.42);
+  box-shadow: 0 7px 16px rgba(91, 22, 12, 0.22);
   animation: float-danger 0.72s ease-out forwards;
 }
 
@@ -366,32 +376,33 @@ button.stat {
   position: absolute;
   z-index: 28;
   left: 50%;
-  top: 37%;
-  padding: 0.12em 0.38em 0.18em;
+  top: 34%;
+  padding: 0.22em 0.56em 0.28em;
   border-radius: 8px;
   opacity: 0;
   color: #fff7d4;
   background: rgba(232, 93, 54, 0.9);
-  font-size: clamp(28px, 8dvh, 56px);
+  border: 2px solid rgba(255, 255, 255, 0.42);
+  font-size: clamp(18px, 4.6dvh, 34px);
   font-weight: 950;
   line-height: 1;
   text-align: center;
-  text-shadow: 0 3px 0 rgba(93, 40, 20, 0.44);
+  text-shadow: 0 2px 0 rgba(93, 40, 20, 0.28);
   transform: translate(-50%, -50%) scale(0.82);
   pointer-events: none;
   white-space: nowrap;
 }
 
 .burst.combo {
-  color: #3c2415;
-  background: linear-gradient(180deg, #fff3a8 0%, #ffbf4f 100%);
-  box-shadow: 0 8px 0 rgba(143, 75, 26, 0.58), 0 16px 34px rgba(92, 46, 20, 0.24);
+  color: #55311a;
+  background: linear-gradient(180deg, #fff7cf 0%, #ffd36b 100%);
+  box-shadow: 0 4px 0 rgba(143, 75, 26, 0.42), 0 12px 24px rgba(92, 46, 20, 0.18);
 }
 
 .burst.danger {
   color: #fff9f1;
-  background: linear-gradient(180deg, #ff6a4c 0%, #c72f28 100%);
-  box-shadow: 0 8px 0 rgba(111, 28, 26, 0.66), 0 16px 34px rgba(92, 24, 20, 0.26);
+  background: linear-gradient(180deg, #f06f54 0%, #c83c34 100%);
+  box-shadow: 0 4px 0 rgba(111, 28, 26, 0.48), 0 12px 24px rgba(92, 24, 20, 0.2);
 }
 
 .burst.is-visible {
@@ -607,11 +618,11 @@ button.stat {
 @keyframes burst-pop {
   0% {
     opacity: 0;
-    transform: translate(-50%, -50%) scale(0.78) rotate(-3deg);
+    transform: translate(-50%, -50%) scale(0.84) rotate(-2deg);
   }
   22% {
     opacity: 1;
-    transform: translate(-50%, -50%) scale(1.14) rotate(1deg);
+    transform: translate(-50%, -50%) scale(1.06) rotate(1deg);
   }
   78% {
     opacity: 1;

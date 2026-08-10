@@ -29,6 +29,7 @@ const LIFE_EMPTY = "\u00B7";
 const CAT_RUN_CLASS = "cat-runner";
 const CAT_JUMP_CLASS = "cat-jumper";
 const RANKING_KEY = "bungeoppang-cat-ranking";
+const MAX_AIR_BOOSTS = 2;
 
 const state = {
   mode: "stopped",
@@ -38,6 +39,7 @@ const state = {
   best: Number(localStorage.getItem("bungeoppang-cat-best") || 0),
   catY: 0,
   catVelocity: 0,
+  airBoosts: 0,
   speed: 250,
   spawnTimer: 0,
   mapX: 0,
@@ -45,6 +47,7 @@ const state = {
   doubleUntil: 0,
   invincibleUntil: 0,
   hitVisualUntil: 0,
+  lastJumpInputAt: 0,
   lastTime: 0,
   runFrame: 0,
   items: [],
@@ -75,6 +78,7 @@ function resetGame() {
   state.lives = 3;
   state.catY = 0;
   state.catVelocity = 0;
+  state.airBoosts = 0;
   state.speed = 250;
   state.spawnTimer = 0.72;
   state.mapX = 0;
@@ -82,6 +86,7 @@ function resetGame() {
   state.doubleUntil = 0;
   state.invincibleUntil = 0;
   state.hitVisualUntil = 0;
+  state.lastJumpInputAt = 0;
   state.runFrame = 0;
   state.items.forEach((item) => item.el.remove());
   state.items = [];
@@ -107,8 +112,18 @@ function jump() {
     return;
   }
 
+  const jumpVelocity = getJumpVelocity();
+
   if (state.catY < 2) {
-    state.catVelocity = 650;
+    state.catVelocity = jumpVelocity;
+    state.airBoosts = 0;
+    setCatSprite("jump");
+    return;
+  }
+
+  if (state.airBoosts < MAX_AIR_BOOSTS) {
+    state.airBoosts += 1;
+    state.catVelocity = Math.min(state.catVelocity + jumpVelocity * 0.38, jumpVelocity * 1.46);
     setCatSprite("jump");
   }
 }
@@ -144,9 +159,11 @@ function stopGame() {
   state.items = [];
   state.catY = 0;
   state.catVelocity = 0;
+  state.airBoosts = 0;
   state.invincibleUntil = 0;
   state.hitVisualUntil = 0;
   state.doubleUntil = 0;
+  state.lastJumpInputAt = 0;
   state.runFrame = 0;
   cat.style.translate = "0 0";
   cat.classList.remove("is-running", "is-hit");
@@ -204,10 +221,11 @@ function tick(now) {
     state.spawnTimer = Math.max(0.82, 1.48 - state.speed / 520 + Math.random() * 0.55);
   }
 
-  state.catVelocity -= 1680 * dt;
+  state.catVelocity -= getGravity() * dt;
   state.catY = Math.max(0, state.catY + state.catVelocity * dt);
   if (state.catY === 0 && state.catVelocity < 0) {
     state.catVelocity = 0;
+    state.airBoosts = 0;
     setCatSprite("run");
   }
 
@@ -264,6 +282,18 @@ function updateItems(now, dt) {
 
 function overlaps(a, b) {
   return a.x < b.x + b.width && a.x + a.width > b.x && a.y < b.y + b.height && a.y + a.height > b.y;
+}
+
+function getGameHeight() {
+  return Math.max(game.clientHeight || 0, 360);
+}
+
+function getJumpVelocity() {
+  return getGameHeight() * 1.18;
+}
+
+function getGravity() {
+  return getGameHeight() * 3.05;
 }
 
 function toLocalRect(rect, parentRect) {
@@ -497,15 +527,25 @@ scoreForm.addEventListener("submit", (event) => {
 
 stateButton.addEventListener("click", toggleStateButton);
 bestStat.addEventListener("click", showRankingPanel);
-game.addEventListener("pointerdown", (event) => {
+game.addEventListener("pointerdown", handleGamePress);
+game.addEventListener("click", handleGamePress);
+
+function handleGamePress(event) {
   if (!overlay.hidden && event.target.closest(".panel")) return;
+  const now = performance.now();
+  if (now - state.lastJumpInputAt < 90) return;
+  state.lastJumpInputAt = now;
   jump();
-});
+}
+
 window.addEventListener("keydown", (event) => {
   if (event.target instanceof HTMLInputElement) return;
 
   if (event.code === "Space" || event.code === "ArrowUp") {
     event.preventDefault();
+    const now = performance.now();
+    if (now - state.lastJumpInputAt < 90) return;
+    state.lastJumpInputAt = now;
     jump();
   }
 });
