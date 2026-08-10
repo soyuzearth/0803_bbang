@@ -9,9 +9,7 @@ const playerName = document.getElementById("playerName");
 const rankingList = document.getElementById("rankingList");
 const titleScreen = document.getElementById("titleScreen");
 const titleStartButton = document.getElementById("titleStartButton");
-const titleSoundButton = document.getElementById("titleSoundButton");
 const stateButton = document.getElementById("stateButton");
-const soundButton = document.getElementById("soundButton");
 const bestStat = document.getElementById("bestStat");
 const livesEl = document.getElementById("lives");
 const scoreEl = document.getElementById("score");
@@ -515,12 +513,6 @@ function toggleSound() {
 }
 
 function updateSoundButton() {
-  if (!soundButton) return;
-  soundButton.textContent = audio.enabled ? "SOUND ON" : "SOUND";
-  soundButton.dataset.enabled = audio.enabled ? "true" : "false";
-  if (!titleSoundButton) return;
-  titleSoundButton.textContent = audio.enabled ? "SOUND ON" : "SOUND";
-  titleSoundButton.dataset.enabled = audio.enabled ? "true" : "false";
 }
 
 function playTone(freq, start, duration, type, destination, volume) {
@@ -816,9 +808,7 @@ scoreForm.addEventListener("submit", (event) => {
 });
 
 stateButton.addEventListener("click", toggleStateButton);
-if (soundButton) soundButton.addEventListener("click", toggleSound);
 if (titleStartButton) titleStartButton.addEventListener("click", resetGame);
-if (titleSoundButton) titleSoundButton.addEventListener("click", toggleSound);
 bestStat.addEventListener("click", showRankingPanel);
 game.addEventListener("pointerdown", handleGamePress);
 game.addEventListener("click", handleGamePress);

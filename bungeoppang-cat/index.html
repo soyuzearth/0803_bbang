@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <title>붕어빵 먹는 고양이</title>
-    <link rel="stylesheet" href="./styles.css?v=32" />
+    <link rel="stylesheet" href="./styles.css?v=33" />
   </head>
   <body>
     <main class="shell">
@@ -26,10 +26,8 @@
         <div class="cat cat-runner" id="cat" role="img" aria-label="달리는 고양이"></div>
         <div class="burst" id="burst" aria-hidden="true"></div>
         <section class="title-screen" id="titleScreen" aria-label="게임 타이틀 화면">
-          <img class="title-logo" src="./assets/title-logo.png?v=32" alt="붕어빵 먹는 고양이" />
           <div class="title-actions">
             <button class="title-play" id="titleStartButton" type="button">PLAY</button>
-            <button class="title-sound" id="titleSoundButton" type="button">SOUND</button>
           </div>
         </section>
         <div class="ground"></div>
@@ -47,13 +45,10 @@
         </div>
       </section>
 
-      <div class="controls">
-        <button class="sound-action" id="soundButton" type="button" data-enabled="false">SOUND</button>
-        <button class="action" id="stateButton" type="button" data-mode="stopped">PLAY</button>
-      </div>
+      <button class="action" id="stateButton" type="button" data-mode="stopped">PLAY</button>
       <div class="hint">화면 탭 또는 스페이스로 점프, 일시정지 중에는 이어서 달립니다.</div>
     </main>
 
-    <script src="./game.js?v=32"></script>
+    <script src="./game.js?v=33"></script>
   </body>
 </html>
