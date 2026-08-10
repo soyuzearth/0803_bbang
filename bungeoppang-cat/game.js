@@ -32,6 +32,7 @@ const RANKING_KEY = "bungeoppang-cat-ranking";
 const MAX_AIR_BOOSTS = 2;
 const BASE_SPEED_RATIO = 0.22;
 const SPEED_ACCEL_RATIO = 0.0048;
+const MUSIC_STEP_MS = 210;
 
 const state = {
   mode: "stopped",
@@ -55,6 +56,15 @@ const state = {
   items: [],
 };
 
+const audio = {
+  context: null,
+  master: null,
+  musicGain: null,
+  sfxGain: null,
+  timer: 0,
+  step: 0,
+};
+
 [
   "./assets/cat-run-frame-0.png",
   "./assets/cat-run-frame-1.png",
@@ -74,6 +84,7 @@ setCatSprite("run");
 updateStateButton();
 
 function resetGame() {
+  startAudio();
   state.mode = "playing";
   state.score = 0;
   state.combo = 1;
@@ -120,6 +131,7 @@ function jump() {
     state.catVelocity = jumpVelocity;
     state.airBoosts = 0;
     setCatSprite("jump");
+    playSfx("jump");
     return;
   }
 
@@ -127,11 +139,13 @@ function jump() {
     state.airBoosts += 1;
     state.catVelocity = Math.min(state.catVelocity + jumpVelocity * 0.38, jumpVelocity * 1.46);
     setCatSprite("jump");
+    playSfx("boost");
   }
 }
 
 function resumeGame() {
   if (state.mode !== "paused") return;
+  startAudio();
   state.mode = "playing";
   state.lastTime = performance.now();
   cat.classList.add("is-running");
@@ -144,12 +158,14 @@ function resumeGame() {
 function pauseGame() {
   if (state.mode !== "playing") return;
   state.mode = "paused";
+  stopMusic();
   cat.classList.remove("is-running");
   updateStateButton();
 }
 
 function stopGame() {
   state.mode = "stopped";
+  stopMusic();
   state.score = 0;
   state.combo = 1;
   state.lives = 3;
@@ -314,6 +330,150 @@ function getGravity() {
   return getGameHeight() * 3.05;
 }
 
+function startAudio() {
+  const context = getAudioContext();
+  if (!context) return;
+  if (context.state === "suspended") context.resume();
+  startMusic();
+}
+
+function getAudioContext() {
+  if (audio.context) return audio.context;
+  const AudioContext = window.AudioContext || window.webkitAudioContext;
+  if (!AudioContext) return null;
+
+  audio.context = new AudioContext();
+  audio.master = audio.context.createGain();
+  audio.musicGain = audio.context.createGain();
+  audio.sfxGain = audio.context.createGain();
+  audio.master.gain.value = 0.72;
+  audio.musicGain.gain.value = 0.18;
+  audio.sfxGain.gain.value = 0.46;
+  audio.musicGain.connect(audio.master);
+  audio.sfxGain.connect(audio.master);
+  audio.master.connect(audio.context.destination);
+  return audio.context;
+}
+
+function startMusic() {
+  if (audio.timer || !audio.context) return;
+  audio.step = 0;
+  playMusicStep();
+  audio.timer = window.setInterval(playMusicStep, MUSIC_STEP_MS);
+}
+
+function stopMusic() {
+  if (!audio.timer) return;
+  window.clearInterval(audio.timer);
+  audio.timer = 0;
+}
+
+function playMusicStep() {
+  if (!audio.context || !audio.musicGain) return;
+  const now = audio.context.currentTime;
+  const melody = [659, 784, 880, 784, 659, 587, 523, 587, 659, 784, 988, 880, 784, 659, 587, 523];
+  const bass = [196, 196, 247, 247, 220, 220, 262, 262];
+  const step = audio.step;
+
+  if (step % 2 === 0) {
+    playTone(melody[step % melody.length], now, 0.18, "triangle", audio.musicGain, 0.18);
+  }
+
+  if (step % 4 === 0) {
+    playTone(bass[Math.floor(step / 4) % bass.length], now, 0.34, "sine", audio.musicGain, 0.16);
+  }
+
+  if (step % 4 === 2) {
+    playNoise(now, 0.035, audio.musicGain, 0.035, 1400);
+  }
+
+  audio.step = (step + 1) % 32;
+}
+
+function playSfx(name) {
+  const context = getAudioContext();
+  if (!context || !audio.sfxGain) return;
+  const now = context.currentTime;
+
+  if (name === "jump") {
+    playSlide(330, 560, now, 0.12, "sine", 0.16);
+  } else if (name === "boost") {
+    playSlide(450, 720, now, 0.1, "triangle", 0.13);
+  } else if (name === "redbean") {
+    playTone(880, now, 0.08, "triangle", audio.sfxGain, 0.2);
+    playTone(1320, now + 0.045, 0.09, "triangle", audio.sfxGain, 0.14);
+  } else if (name === "custard") {
+    playTone(988, now, 0.08, "triangle", audio.sfxGain, 0.18);
+    playTone(1319, now + 0.055, 0.1, "triangle", audio.sfxGain, 0.16);
+    playTone(1760, now + 0.11, 0.12, "triangle", audio.sfxGain, 0.12);
+  } else if (name === "bag") {
+    [784, 988, 1175, 1568].forEach((freq, index) => {
+      playTone(freq, now + index * 0.045, 0.11, "triangle", audio.sfxGain, 0.14);
+    });
+  } else if (name === "puddle") {
+    playSlide(260, 120, now, 0.22, "sawtooth", 0.09);
+    playNoise(now, 0.12, audio.sfxGain, 0.08, 650);
+  } else if (name === "hurt") {
+    playSlide(180, 95, now, 0.2, "square", 0.09);
+  } else if (name === "gameover") {
+    [392, 330, 262, 196].forEach((freq, index) => {
+      playTone(freq, now + index * 0.12, 0.16, "sine", audio.sfxGain, 0.13);
+    });
+  }
+}
+
+function playTone(freq, start, duration, type, destination, volume) {
+  const osc = audio.context.createOscillator();
+  const gain = audio.context.createGain();
+  osc.type = type;
+  osc.frequency.value = freq;
+  gain.gain.setValueAtTime(0.0001, start);
+  gain.gain.exponentialRampToValueAtTime(volume, start + 0.015);
+  gain.gain.exponentialRampToValueAtTime(0.0001, start + duration);
+  osc.connect(gain);
+  gain.connect(destination);
+  osc.start(start);
+  osc.stop(start + duration + 0.03);
+}
+
+function playSlide(from, to, start, duration, type, volume) {
+  const osc = audio.context.createOscillator();
+  const gain = audio.context.createGain();
+  osc.type = type;
+  osc.frequency.setValueAtTime(from, start);
+  osc.frequency.exponentialRampToValueAtTime(to, start + duration);
+  gain.gain.setValueAtTime(0.0001, start);
+  gain.gain.exponentialRampToValueAtTime(volume, start + 0.012);
+  gain.gain.exponentialRampToValueAtTime(0.0001, start + duration);
+  osc.connect(gain);
+  gain.connect(audio.sfxGain);
+  osc.start(start);
+  osc.stop(start + duration + 0.03);
+}
+
+function playNoise(start, duration, destination, volume, filterFreq) {
+  const sampleRate = audio.context.sampleRate;
+  const buffer = audio.context.createBuffer(1, sampleRate * duration, sampleRate);
+  const data = buffer.getChannelData(0);
+  for (let i = 0; i < data.length; i += 1) {
+    data[i] = (Math.random() * 2 - 1) * (1 - i / data.length);
+  }
+
+  const source = audio.context.createBufferSource();
+  const filter = audio.context.createBiquadFilter();
+  const gain = audio.context.createGain();
+  filter.type = "lowpass";
+  filter.frequency.value = filterFreq;
+  gain.gain.setValueAtTime(volume, start);
+  gain.gain.exponentialRampToValueAtTime(0.0001, start + duration);
+  source.buffer = buffer;
+  source.connect(filter);
+  filter.connect(gain);
+  gain.connect(destination);
+  source.start(start);
+  source.stop(start + duration);
+}
+
 function toLocalRect(rect, parentRect) {
   return {
     x: rect.left - parentRect.left,
@@ -342,6 +502,7 @@ function handleHit(item, now) {
 
   if (item.type === "bag") {
     state.doubleUntil = now + 8000;
+    playSfx("bag");
     showFloat(LABEL_BAG, "bonus");
     showBurst(LABEL_BAG, "combo");
     pulseCombo();
@@ -356,11 +517,13 @@ function handleHit(item, now) {
 
   if (item.type === "custard") {
     state.combo += 1;
+    playSfx("custard");
     showFloat(`${LABEL_CUSTARD} x${getScoreMultiplier(now)}!`, "combo");
     showBurst(`${LABEL_CUSTARD} x${getScoreMultiplier(now)}!`, "combo");
     pulseCombo();
     pulseGame("good");
   } else {
+    playSfx("redbean");
     showFloat(`${LABEL_REDBEAN} +${points}`, "score");
     pulseGame("score");
   }
@@ -372,6 +535,7 @@ function loseLife(now, type = "bad") {
   if (state.invincibleUntil && now < state.invincibleUntil) return;
 
   state.lives -= 1;
+  playSfx(type === "puddle" ? "puddle" : "hurt");
   state.combo = 1;
   state.invincibleUntil = now + 1200;
   state.hitVisualUntil = now + 260;
@@ -419,6 +583,8 @@ function pulseGame(kind) {
 
 function endGame() {
   state.mode = "stopped";
+  stopMusic();
+  playSfx("gameover");
   cat.classList.remove("is-running");
   cat.classList.remove("is-hit");
   state.best = Math.max(state.best, state.score);
