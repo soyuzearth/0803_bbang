@@ -23,11 +23,15 @@ const LABEL_RESTART = "\uB2E4\uC2DC \uC2DC\uC791";
 const LABEL_CUSTARD = "\uC288\uBD95";
 const LABEL_HOT = "\uC544\uB728\uB728!";
 const LABEL_LIFE = "\uBAA9\uC228 -1";
-const LABEL_BAG = "\uBD09\uC9C0 2x!";
+const LABEL_BAG = "\uBD09\uC9C0 +30";
 const LABEL_REDBEAN = "\uD31F\uBD95";
 const LABEL_PUDDLE = "\uBB3C\uC6C5\uB369\uC774!";
 const LIFE_FULL = "\uD83D\uDC31";
 const LIFE_EMPTY = "\u00B7";
+const LABEL_GOLD = "\uD669\uAE08\uBD95!";
+const LABEL_GOLD_READY = "\uD669\uAE08\uBD95 \uB4F1\uC7A5!";
+const LABEL_COMBO_RESET = "\uCF64\uBCF4 \uB9AC\uC14B";
+const LABEL_GOLD_RUSH = "\uACE8\uB4DC \uB7EC\uC2DC!";
 const CAT_RUN_CLASS = "cat-runner";
 const CAT_JUMP_CLASS = "cat-jumper";
 const RANKING_KEY = "bungeoppang-cat-ranking";
@@ -35,6 +39,9 @@ const MAX_AIR_BOOSTS = 2;
 const BASE_SPEED_RATIO = 0.22;
 const SPEED_ACCEL_RATIO = 0.0048;
 const MUSIC_STEP_MS = 210;
+const MAX_COMBO = 10;
+const GOLD_SPEED_BOOST_RATIO = 0.018;
+const GOLD_RUSH_DURATION_MS = 5000;
 const AUDIO_FILES = {
   bgm: ["./assets/audio/bgm.mp3", "./assets/audio/bgm.wav"],
   jump: ["./assets/audio/jump.mp3", "./assets/audio/jump.wav"],
@@ -50,7 +57,7 @@ const AUDIO_FILES = {
 const state = {
   mode: "stopped",
   score: 0,
-  combo: 1,
+  combo: 0,
   lives: 3,
   best: Number(localStorage.getItem("bungeoppang-cat-best") || 0),
   catY: 0,
@@ -60,7 +67,9 @@ const state = {
   spawnTimer: 0,
   mapX: 0,
   laneX: 0,
-  doubleUntil: 0,
+  goldReady: false,
+  goldActive: false,
+  goldRushUntil: 0,
   invincibleUntil: 0,
   hitVisualUntil: 0,
   lastJumpInputAt: 0,
@@ -98,13 +107,14 @@ renderRanking();
 updateHud();
 setCatSprite("run");
 updateStateButton();
+setTimeout(startTitleAudio, 250);
 
 function resetGame() {
-  hideTitleScreen();
   startAudio();
+  hideTitleScreen();
   state.mode = "playing";
   state.score = 0;
-  state.combo = 1;
+  state.combo = 0;
   state.lives = 3;
   state.catY = 0;
   state.catVelocity = 0;
@@ -113,7 +123,9 @@ function resetGame() {
   state.spawnTimer = 0.72;
   state.mapX = 0;
   state.laneX = 0;
-  state.doubleUntil = 0;
+  state.goldReady = false;
+  state.goldActive = false;
+  state.goldRushUntil = 0;
   state.invincibleUntil = 0;
   state.hitVisualUntil = 0;
   state.lastJumpInputAt = 0;
@@ -184,7 +196,7 @@ function stopGame() {
   state.mode = "stopped";
   stopMusic();
   state.score = 0;
-  state.combo = 1;
+  state.combo = 0;
   state.lives = 3;
   state.speed = getBaseSpeed();
   state.spawnTimer = 0;
@@ -197,9 +209,12 @@ function stopGame() {
   state.airBoosts = 0;
   state.invincibleUntil = 0;
   state.hitVisualUntil = 0;
-  state.doubleUntil = 0;
+  state.goldReady = false;
+  state.goldActive = false;
+  state.goldRushUntil = 0;
   state.lastJumpInputAt = 0;
   state.runFrame = 0;
+  game.classList.remove("is-gold-rush");
   cat.style.translate = "0 0";
   cat.classList.remove("is-running", "is-hit");
   setCatSprite("run");
@@ -214,7 +229,13 @@ function stopGame() {
 function spawnItem() {
   const roll = Math.random();
   let type = "redbean";
-  if (roll > 0.88) type = "puddle";
+  if (state.goldReady && !state.goldActive) {
+    type = "gold";
+    state.goldReady = false;
+    state.goldActive = true;
+  } else if (isGoldRushActive() && roll > 0.76) type = "goldbit";
+  else if (isGoldRushActive() && roll > 0.58) type = "custard";
+  else if (roll > 0.88) type = "puddle";
   else if (roll > 0.78) type = "bag";
   else if (roll > 0.62) type = "bad";
   else if (roll > 0.38) type = "custard";
@@ -273,8 +294,9 @@ function tick(now) {
     state.invincibleUntil = 0;
   }
 
-  if (state.doubleUntil && now > state.doubleUntil) {
-    state.doubleUntil = 0;
+  if (state.goldRushUntil && now > state.goldRushUntil) {
+    state.goldRushUntil = 0;
+    game.classList.remove("is-gold-rush");
     updateHud();
   }
 
@@ -295,12 +317,12 @@ function updateCatRunFrame(now) {
 function updateItems(now, dt) {
   const gameBounds = game.getBoundingClientRect();
   const catBounds = cat.getBoundingClientRect();
-  const catRect = insetRect(toLocalRect(catBounds, gameBounds), 0.2);
+  const catRect = getCatHitRect(toLocalRect(catBounds, gameBounds));
 
   for (const item of state.items) {
     item.x -= state.speed * dt;
     item.el.style.transform = `translateX(${item.x}px)`;
-    const itemRect = insetRect(toLocalRect(item.el.getBoundingClientRect(), gameBounds), 0.14);
+    const itemRect = getItemHitRect(toLocalRect(item.el.getBoundingClientRect(), gameBounds), item.type);
 
     if (!item.collected && overlaps(catRect, itemRect)) {
       item.collected = true;
@@ -310,13 +332,54 @@ function updateItems(now, dt) {
 
   state.items = state.items.filter((item) => {
     const alive = item.x > -120 && !item.collected;
-    if (!alive) item.el.remove();
+    if (!alive) {
+      if (item.type === "gold" && !item.collected) {
+        state.combo = 0;
+        state.goldActive = false;
+        state.goldRushUntil = 0;
+        game.classList.remove("is-gold-rush");
+        showFloat(LABEL_COMBO_RESET, "danger");
+        updateHud();
+      }
+      item.el.remove();
+    }
     return alive;
   });
 }
 
 function overlaps(a, b) {
   return a.x < b.x + b.width && a.x + a.width > b.x && a.y < b.y + b.height && a.y + a.height > b.y;
+}
+
+function getCatHitRect(rect) {
+  return {
+    x: rect.x + rect.width * 0.34,
+    y: rect.y + rect.height * 0.22,
+    width: rect.width * 0.42,
+    height: rect.height * 0.58,
+  };
+}
+
+function getItemHitRect(rect, type) {
+  if (type === "puddle") {
+    return {
+      x: rect.x + rect.width * 0.22,
+      y: rect.y + rect.height * 0.42,
+      width: rect.width * 0.56,
+      height: rect.height * 0.34,
+    };
+  }
+
+  if (type === "bad") {
+    return {
+      x: rect.x + rect.width * 0.28,
+      y: rect.y + rect.height * 0.24,
+      width: rect.width * 0.46,
+      height: rect.height * 0.52,
+    };
+  }
+
+  return insetRect(rect, 0.18);
 }
 
 function getGameHeight() {
@@ -372,6 +435,12 @@ function startElementAudio() {
   });
   updateSoundButton();
   return true;
+}
+
+function startTitleAudio() {
+  if (state.mode !== "stopped") return;
+  if (titleScreen.classList.contains("is-hidden")) return;
+  startAudio();
 }
 
 function getAudioElement(name) {
@@ -594,25 +663,41 @@ function handleHit(item, now) {
   }
 
   if (item.type === "bag") {
-    state.doubleUntil = now + 8000;
+    state.score += 30;
+    addCombo(2);
     playSfx("bag");
-    showFloat(LABEL_BAG, "bonus");
-    showBurst(LABEL_BAG, "combo");
+    showFloat(`${LABEL_BAG} +2`, "bonus");
+    showBurst(`\uCF64\uBCF4 ${state.combo}/${MAX_COMBO}`, "combo");
     pulseCombo();
     pulseGame("good");
     updateHud();
     return;
   }
 
-  const multiplier = getScoreMultiplier(now);
-  const points = (item.type === "custard" ? 30 : 10) * multiplier;
+  const points = item.type === "gold" ? 150 : item.type === "goldbit" ? 20 : 10;
   state.score += points;
 
-  if (item.type === "custard") {
-    state.combo += 1;
+  if (item.type === "gold") {
+    state.combo = 0;
+    state.goldActive = false;
+    state.goldRushUntil = now + GOLD_RUSH_DURATION_MS;
+    state.speed += getGameWidth() * GOLD_SPEED_BOOST_RATIO;
+    game.classList.add("is-gold-rush");
     playSfx("custard");
-    showFloat(`${LABEL_CUSTARD} x${getScoreMultiplier(now)}!`, "combo");
-    showBurst(`${LABEL_CUSTARD} x${getScoreMultiplier(now)}!`, "combo");
+    showFloat(`${LABEL_GOLD} +${points}`, "combo");
+    showBurst(`${LABEL_GOLD_RUSH} +${points}`, "gold");
+    pulseCombo();
+    pulseGame("good");
+  } else if (item.type === "goldbit") {
+    playSfx("redbean");
+    showFloat(`+${points}`, "bonus");
+    pulseCombo();
+    pulseGame("good");
+  } else if (item.type === "custard") {
+    addCombo(1);
+    playSfx("custard");
+    showFloat(`${LABEL_CUSTARD} +1`, "combo");
+    showBurst(`\uCF64\uBCF4 ${state.combo}/${MAX_COMBO}`, "combo");
     pulseCombo();
     pulseGame("good");
   } else {
@@ -624,17 +709,30 @@ function handleHit(item, now) {
   updateHud();
 }
 
+function addCombo(amount) {
+  state.combo = Math.min(MAX_COMBO, state.combo + amount);
+  if (state.combo >= MAX_COMBO && !state.goldActive && !state.goldReady) {
+    state.goldReady = true;
+    showBurst(LABEL_GOLD_READY, "combo");
+  }
+}
+
 function loseLife(now, type = "bad") {
   if (state.invincibleUntil && now < state.invincibleUntil) return;
 
   state.lives -= 1;
   playSfx(type === "puddle" ? "puddle" : "hurt");
-  state.combo = 1;
+  const hadCombo = state.combo > 0;
+  state.combo = 0;
+  state.goldReady = false;
+  state.goldActive = false;
+  state.goldRushUntil = 0;
+  game.classList.remove("is-gold-rush");
   state.invincibleUntil = now + 1200;
   state.hitVisualUntil = now + 260;
   cat.classList.add("is-hit");
   showFloat(type === "puddle" ? LABEL_PUDDLE : LABEL_HOT, "danger");
-  showBurst(type === "puddle" ? LABEL_PUDDLE : LABEL_LIFE, "danger");
+  showBurst(hadCombo ? LABEL_COMBO_RESET : type === "puddle" ? LABEL_PUDDLE : LABEL_LIFE, "danger");
   pulseGame("danger");
   updateHud();
 
@@ -680,6 +778,10 @@ function endGame() {
   playSfx("gameover");
   cat.classList.remove("is-running");
   cat.classList.remove("is-hit");
+  state.goldReady = false;
+  state.goldActive = false;
+  state.goldRushUntil = 0;
+  game.classList.remove("is-gold-rush");
   state.best = Math.max(state.best, state.score);
   localStorage.setItem("bungeoppang-cat-best", String(state.best));
   updateHud();
@@ -752,15 +854,23 @@ function setCatSprite(name) {
 }
 
 function updateHud() {
-  livesEl.textContent = LIFE_FULL.repeat(Math.max(state.lives, 0)) + LIFE_EMPTY.repeat(Math.max(3 - state.lives, 0));
+  livesEl.replaceChildren(
+    ...Array.from({ length: 3 }, (_, index) => {
+      const life = document.createElement("span");
+      life.className = "life-dot";
+      life.textContent = index < state.lives ? LIFE_FULL : LIFE_EMPTY;
+      return life;
+    })
+  );
   scoreEl.textContent = state.score;
-  comboEl.textContent = `x${getScoreMultiplier(performance.now())}`;
+  comboEl.textContent = `${state.combo}/${MAX_COMBO}`;
   bestEl.textContent = state.best;
+  comboStat.classList.toggle("is-max", state.combo >= MAX_COMBO || state.goldActive);
+  comboStat.classList.toggle("is-gold-rush", Boolean(isGoldRushActive()));
 }
 
-function getScoreMultiplier(now) {
-  const bagMultiplier = state.doubleUntil && now < state.doubleUntil ? 2 : 1;
-  return state.combo * bagMultiplier;
+function isGoldRushActive(now = performance.now()) {
+  return state.goldRushUntil && now < state.goldRushUntil;
 }
 
 function getRanking() {
@@ -809,9 +919,12 @@ scoreForm.addEventListener("submit", (event) => {
 
 stateButton.addEventListener("click", toggleStateButton);
 if (titleStartButton) titleStartButton.addEventListener("click", resetGame);
+titleScreen.addEventListener("pointerdown", startTitleAudio, { capture: true });
 bestStat.addEventListener("click", showRankingPanel);
 game.addEventListener("pointerdown", handleGamePress);
 game.addEventListener("click", handleGamePress);
+
+window.addEventListener("pointerdown", startTitleAudio, { capture: true, passive: true });
 
 function handleGamePress(event) {
   if (!overlay.hidden && event.target.closest(".panel")) return;
@@ -823,6 +936,7 @@ function handleGamePress(event) {
 
 window.addEventListener("keydown", (event) => {
   if (event.target instanceof HTMLInputElement) return;
+  startTitleAudio();
 
   if (event.code === "Space" || event.code === "ArrowUp") {
     event.preventDefault();

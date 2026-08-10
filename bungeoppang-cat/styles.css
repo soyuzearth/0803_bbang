@@ -42,7 +42,7 @@ body {
   left: max(12px, env(safe-area-inset-left));
   right: max(12px, env(safe-area-inset-right));
   display: grid;
-  grid-template-columns: minmax(0, 1fr) repeat(4, minmax(62px, 86px));
+  grid-template-columns: minmax(0, 1fr) repeat(4, minmax(58px, 86px));
   gap: 8px;
   align-items: center;
   pointer-events: none;
@@ -50,13 +50,18 @@ body {
 
 h1 {
   margin: 0;
-  color: #fff8e8;
-  font-size: clamp(18px, 3.2dvh, 28px);
-  letter-spacing: 0;
-  text-shadow: 0 3px 0 rgba(61, 32, 17, 0.42);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  width: min(39vw, 330px);
+  height: clamp(34px, 8.5dvh, 62px);
+  overflow: visible;
+  filter: drop-shadow(0 7px 7px rgba(23, 18, 37, 0.28));
+}
+
+h1 img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: left center;
 }
 
 .stat {
@@ -90,7 +95,9 @@ button.stat {
 }
 
 .stat strong {
+  display: block;
   font-size: clamp(15px, 3dvh, 22px);
+  line-height: 1.05;
 }
 
 .combo-stat {
@@ -113,11 +120,46 @@ button.stat {
   text-shadow: 0 2px 0 rgba(255, 255, 255, 0.8);
 }
 
+.combo-stat.is-max {
+  border-color: rgba(255, 209, 79, 0.92);
+  background: linear-gradient(180deg, rgba(255, 248, 199, 0.96), rgba(255, 218, 102, 0.94));
+}
+
+.combo-stat.is-max span::after {
+  content: " MAX";
+  color: #c15624;
+  font-size: 0.72em;
+}
+
+.combo-stat.is-gold-rush {
+  border-color: rgba(255, 178, 49, 0.98);
+  background: linear-gradient(180deg, #fff4aa 0%, #ffb83d 100%);
+  animation: combo-pop 0.7s cubic-bezier(.2, 1.35, .28, 1) infinite alternate;
+}
+
+.combo-stat.is-gold-rush span::after {
+  content: " RUSH";
+  color: #8d4618;
+  font-size: 0.72em;
+}
+
 #lives {
   color: #e85d36;
-  font-size: clamp(14px, 2.8dvh, 20px);
+  display: flex;
+  justify-content: center;
+  gap: 2px;
+  font-size: clamp(12px, 2.15dvh, 16px);
   letter-spacing: 0;
   white-space: nowrap;
+  overflow: hidden;
+}
+
+.life-dot {
+  display: inline-grid;
+  width: clamp(13px, 2.35dvh, 18px);
+  height: clamp(13px, 2.35dvh, 18px);
+  place-items: center;
+  line-height: 1;
 }
 
 .game {
@@ -152,6 +194,14 @@ button.stat {
   animation: feedback-flash 0.24s ease-out;
 }
 
+.game.is-gold-rush::after {
+  background:
+    radial-gradient(circle at 18% 24%, rgba(255, 214, 91, 0.32), transparent 18%),
+    radial-gradient(circle at 82% 22%, rgba(255, 214, 91, 0.28), transparent 19%),
+    linear-gradient(90deg, rgba(255, 188, 63, 0.14), transparent 24%, transparent 76%, rgba(255, 188, 63, 0.14));
+  animation: fever-glow 0.9s ease-in-out infinite alternate;
+}
+
 .game.feedback-danger::after {
   background: rgba(216, 55, 36, 0.24);
   animation: danger-flash 0.34s ease-out;
@@ -160,7 +210,7 @@ button.stat {
 .map-art {
   position: absolute;
   inset: 0;
-  background-image: url("./assets/night-stall-bg.png");
+  background-image: url("./assets/night-stall-bg-v34.png");
   background-size: auto 100%;
   background-position: var(--map-x, 0px) center;
   background-repeat: repeat-x;
@@ -212,48 +262,48 @@ button.stat {
   z-index: 12;
   left: 5.8%;
   bottom: 11%;
-  width: 18%;
-  aspect-ratio: 1 / 1;
+  width: 25%;
+  aspect-ratio: 1.48 / 1;
   transform-origin: 50% 100%;
   image-rendering: auto;
   filter: drop-shadow(0 10px 8px rgba(71, 41, 25, 0.2));
   opacity: 1;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .cat::before {
   content: "";
   position: absolute;
-  left: 0;
-  right: 0;
-  top: 0;
-  bottom: 0;
+  left: -2%;
+  right: -2%;
+  top: -7%;
+  bottom: -4%;
   background-repeat: no-repeat;
   background-position: center;
 }
 
 .cat-runner::before {
   width: auto;
-  background-image: url("./assets/cat-run-frame-0.png");
+  background-image: url("./assets/cat-run-frame-0-v40.png");
   background-size: contain;
   background-position: center;
 }
 
 .cat-runner[data-run-frame="1"]::before {
-  background-image: url("./assets/cat-run-frame-1.png");
+  background-image: url("./assets/cat-run-frame-1-v40.png");
 }
 
 .cat-runner[data-run-frame="2"]::before {
-  background-image: url("./assets/cat-run-frame-2.png");
+  background-image: url("./assets/cat-run-frame-2-v40.png");
 }
 
 .cat-runner[data-run-frame="3"]::before {
-  background-image: url("./assets/cat-run-frame-3.png");
+  background-image: url("./assets/cat-run-frame-3-v40.png");
 }
 
 .cat-jumper::before {
   width: auto;
-  background-image: url("./assets/cat-jump-flat.png");
+  background-image: url("./assets/cat-jump-flat-v40.png");
   background-size: contain;
   background-position: center;
 }
@@ -278,11 +328,28 @@ button.stat {
 }
 
 .item.redbean {
-  background-image: url("./assets/fish-redbean-flat.png");
+  background-image: url("./assets/fish-redbean-flat-v34.png");
 }
 
 .item.custard {
-  background-image: url("./assets/fish-custard-flat.png");
+  background-image: url("./assets/fish-custard-flat-v34.png");
+}
+
+.item.gold {
+  background-image: url("./assets/fish-custard-flat-v34.png");
+  filter:
+    drop-shadow(0 0 10px rgba(255, 224, 89, 0.82))
+    drop-shadow(0 8px 0 rgba(71, 41, 25, 0.16))
+    saturate(1.35) brightness(1.18);
+}
+
+.item.goldbit {
+  width: 7.8%;
+  background-image: url("./assets/fish-custard-flat-v34.png");
+  filter:
+    drop-shadow(0 0 8px rgba(255, 224, 89, 0.76))
+    drop-shadow(0 6px 0 rgba(71, 41, 25, 0.14))
+    saturate(1.45) brightness(1.22);
 }
 
 .item.bad {
@@ -290,45 +357,27 @@ button.stat {
   width: 9%;
   aspect-ratio: 1 / 1;
   height: auto;
-  background-image: url("./assets/burnt-fish-flat.png");
+  background-image: url("./assets/burnt-fish-flat-v34.png");
 }
 
 .item.puddle {
   bottom: var(--item-bottom, 15%);
   width: 10%;
   aspect-ratio: 2 / 1;
-  background:
-    radial-gradient(ellipse at 38% 44%, rgba(255, 255, 255, 0.72) 0 8%, transparent 9%),
-    radial-gradient(ellipse at 58% 55%, #6aa4c6 0 34%, transparent 35%),
-    radial-gradient(ellipse at 44% 54%, #5b93bd 0 52%, transparent 53%);
-  filter: drop-shadow(0 5px 0 rgba(47, 65, 86, 0.18));
+  background-image: url("./assets/puddle-v40.png");
+  filter: drop-shadow(0 6px 0 rgba(47, 65, 86, 0.18));
 }
 
 .item.bag {
   bottom: var(--item-bottom, 23%);
   width: 8%;
   aspect-ratio: 4 / 5;
-  background:
-    radial-gradient(circle at 50% 62%, #d89735 0 8%, transparent 9%),
-    radial-gradient(circle at 38% 58%, #e7ad4b 0 7%, transparent 8%),
-    radial-gradient(circle at 62% 56%, #f0bd5f 0 7%, transparent 8%),
-    linear-gradient(135deg, transparent 0 18%, rgba(255, 255, 255, 0.62) 18% 32%, transparent 32%),
-    linear-gradient(180deg, #fff8e8 0%, #f4e1bf 100%);
-  border: 3px solid rgba(138, 88, 47, 0.36);
-  border-radius: 14px 14px 10px 10px;
+  background-image: url("./assets/bag-item-v34.png");
   filter: drop-shadow(0 8px 0 rgba(71, 41, 25, 0.14));
 }
 
 .item.bag::before {
-  content: "";
-  position: absolute;
-  left: 28%;
-  right: 28%;
-  top: -13%;
-  height: 28%;
-  border: 3px solid rgba(138, 88, 47, 0.42);
-  border-bottom: 0;
-  border-radius: 999px 999px 0 0;
+  content: none;
 }
 
 .float-text {
@@ -405,6 +454,13 @@ button.stat {
   box-shadow: 0 4px 0 rgba(111, 28, 26, 0.48), 0 12px 24px rgba(92, 24, 20, 0.2);
 }
 
+.burst.gold {
+  color: #5a2f16;
+  background: linear-gradient(180deg, #fff6a8 0%, #ffb12f 100%);
+  border-color: rgba(255, 251, 216, 0.75);
+  box-shadow: 0 5px 0 rgba(145, 75, 25, 0.46), 0 0 30px rgba(255, 215, 86, 0.42);
+}
+
 .burst.is-visible {
   animation: burst-pop 0.62s cubic-bezier(.18, 1.35, .28, 1) forwards;
 }
@@ -423,28 +479,31 @@ button.stat {
 
 .title-actions {
   position: absolute;
-  left: clamp(78px, 12vw, 170px);
-  bottom: clamp(58px, 10dvh, 96px);
+  left: 50%;
+  bottom: clamp(6px, 2.2dvh, 18px);
   display: flex;
   gap: 10px;
   align-items: center;
   justify-content: center;
+  transform: translateX(-50%);
 }
 
 .title-play {
-  border: 2px solid rgba(255, 248, 232, 0.7);
-  border-radius: 999px;
-  color: #fff8e8;
+  width: clamp(152px, 23dvh, 216px);
+  aspect-ratio: 2.84 / 1;
+  border: 0;
+  color: transparent;
   font: inherit;
   font-weight: 950;
   cursor: pointer;
-  text-shadow: 0 2px 0 rgba(77, 38, 24, 0.35);
-  box-shadow: 0 5px 0 rgba(105, 44, 24, 0.72), 0 12px 22px rgba(54, 31, 20, 0.22);
-  min-width: clamp(96px, 17dvh, 142px);
-  height: clamp(48px, 7.2dvh, 66px);
-  padding: 0 26px;
-  background: linear-gradient(180deg, #ff7848 0%, #d9462b 100%);
-  font-size: clamp(17px, 3dvh, 24px);
+  background: url("./assets/play-button-v35.png") center / contain no-repeat;
+  filter: drop-shadow(0 12px 12px rgba(54, 31, 20, 0.28));
+  transition: transform 120ms ease, filter 120ms ease;
+}
+
+.title-play:active {
+  transform: translateY(4px) scale(0.97);
+  filter: drop-shadow(0 7px 8px rgba(54, 31, 20, 0.24));
 }
 
 .overlay {
@@ -635,6 +694,15 @@ button.stat {
   }
 }
 
+@keyframes fever-glow {
+  from {
+    opacity: 0.35;
+  }
+  to {
+    opacity: 0.82;
+  }
+}
+
 @keyframes danger-flash {
   0% {
     opacity: 0;
@@ -754,7 +822,10 @@ button.stat {
   }
 
   .title-actions {
-    left: 52px;
-    bottom: 22px;
+    bottom: 6px;
+  }
+
+  .title-play {
+    width: clamp(136px, 21dvh, 176px);
   }
 }
