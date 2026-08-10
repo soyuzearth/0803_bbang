@@ -413,13 +413,10 @@ button.stat {
   position: absolute;
   inset: 0;
   z-index: 55;
-  display: grid;
-  grid-template-rows: minmax(0, 1fr) auto;
-  justify-items: center;
-  align-items: start;
   padding: clamp(18px, 4dvh, 34px) clamp(18px, 4vw, 48px) clamp(24px, 5dvh, 42px);
   background:
-    linear-gradient(180deg, rgba(34, 40, 105, 0.06), rgba(44, 30, 52, 0.16)),
+    linear-gradient(90deg, rgba(43, 37, 93, 0.1) 0%, rgba(43, 37, 93, 0.02) 46%, rgba(44, 30, 52, 0.1) 100%),
+    linear-gradient(180deg, rgba(34, 40, 105, 0.02), rgba(44, 30, 52, 0.12)),
     url("./assets/title-key-art.png") center / cover no-repeat;
 }
 
@@ -428,17 +425,22 @@ button.stat {
 }
 
 .title-logo {
-  width: min(72%, 760px);
-  max-height: 42%;
+  position: absolute;
+  left: clamp(20px, 4.8vw, 66px);
+  top: clamp(32px, 10dvh, 92px);
+  width: min(46%, 620px);
+  max-height: 48%;
   object-fit: contain;
-  margin-top: clamp(2px, 1.2dvh, 14px);
-  transform-origin: 50% 4%;
-  animation: title-sign-swing 3.2s ease-in-out infinite;
+  transform-origin: 50% 0%;
+  animation: title-sign-swing 3.8s ease-in-out infinite;
   filter: drop-shadow(0 10px 10px rgba(50, 23, 13, 0.26));
   pointer-events: none;
 }
 
 .title-actions {
+  position: absolute;
+  left: clamp(58px, 10vw, 150px);
+  bottom: clamp(42px, 10dvh, 94px);
   display: flex;
   gap: 10px;
   align-items: center;
@@ -829,7 +831,14 @@ button.stat {
   }
 
   .title-logo {
-    width: min(58%, 560px);
-    max-height: 36%;
+    left: 16px;
+    top: 12px;
+    width: min(43%, 420px);
+    max-height: 43%;
+  }
+
+  .title-actions {
+    left: 42px;
+    bottom: 18px;
   }
 }
