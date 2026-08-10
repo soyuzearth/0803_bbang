@@ -30,6 +30,8 @@ const CAT_RUN_CLASS = "cat-runner";
 const CAT_JUMP_CLASS = "cat-jumper";
 const RANKING_KEY = "bungeoppang-cat-ranking";
 const MAX_AIR_BOOSTS = 2;
+const BASE_SPEED_RATIO = 0.22;
+const SPEED_ACCEL_RATIO = 0.0048;
 
 const state = {
   mode: "stopped",
@@ -40,7 +42,7 @@ const state = {
   catY: 0,
   catVelocity: 0,
   airBoosts: 0,
-  speed: 250,
+  speed: 0,
   spawnTimer: 0,
   mapX: 0,
   laneX: 0,
@@ -79,7 +81,7 @@ function resetGame() {
   state.catY = 0;
   state.catVelocity = 0;
   state.airBoosts = 0;
-  state.speed = 250;
+  state.speed = getBaseSpeed();
   state.spawnTimer = 0.72;
   state.mapX = 0;
   state.laneX = 0;
@@ -151,7 +153,7 @@ function stopGame() {
   state.score = 0;
   state.combo = 1;
   state.lives = 3;
-  state.speed = 250;
+  state.speed = getBaseSpeed();
   state.spawnTimer = 0;
   state.mapX = 0;
   state.laneX = 0;
@@ -209,7 +211,7 @@ function tick(now) {
 
   const dt = Math.min((now - state.lastTime) / 1000, 0.032);
   state.lastTime = now;
-  state.speed += dt * 5.5;
+  state.speed += getSpeedAcceleration() * dt;
   state.mapX = (state.mapX - state.speed * dt * 0.22) % 1672;
   state.laneX = (state.laneX - state.speed * dt * 0.86) % 260;
   game.style.setProperty("--map-x", `${state.mapX}px`);
@@ -218,7 +220,7 @@ function tick(now) {
 
   if (state.spawnTimer <= 0) {
     spawnItem();
-    state.spawnTimer = Math.max(0.82, 1.48 - state.speed / 520 + Math.random() * 0.55);
+    state.spawnTimer = Math.max(0.82, 1.5 - getSpeedRatio() * 0.95 + Math.random() * 0.55);
   }
 
   state.catVelocity -= getGravity() * dt;
@@ -286,6 +288,22 @@ function overlaps(a, b) {
 
 function getGameHeight() {
   return Math.max(game.clientHeight || 0, 360);
+}
+
+function getGameWidth() {
+  return Math.max(game.clientWidth || 0, 640);
+}
+
+function getBaseSpeed() {
+  return getGameWidth() * BASE_SPEED_RATIO;
+}
+
+function getSpeedAcceleration() {
+  return getGameWidth() * SPEED_ACCEL_RATIO;
+}
+
+function getSpeedRatio() {
+  return state.speed / getGameWidth();
 }
 
 function getJumpVelocity() {
