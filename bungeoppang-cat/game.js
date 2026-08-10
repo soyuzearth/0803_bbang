@@ -8,6 +8,7 @@ const overlayText = document.getElementById("overlayText");
 const playerName = document.getElementById("playerName");
 const rankingList = document.getElementById("rankingList");
 const stateButton = document.getElementById("stateButton");
+const soundButton = document.getElementById("soundButton");
 const bestStat = document.getElementById("bestStat");
 const livesEl = document.getElementById("lives");
 const scoreEl = document.getElementById("score");
@@ -34,15 +35,15 @@ const BASE_SPEED_RATIO = 0.22;
 const SPEED_ACCEL_RATIO = 0.0048;
 const MUSIC_STEP_MS = 210;
 const AUDIO_FILES = {
-  bgm: "./assets/audio/bgm.wav",
-  jump: "./assets/audio/jump.wav",
-  boost: "./assets/audio/boost.wav",
-  redbean: "./assets/audio/redbean.wav",
-  custard: "./assets/audio/custard.wav",
-  bag: "./assets/audio/bag.wav",
-  hurt: "./assets/audio/hurt.wav",
-  puddle: "./assets/audio/puddle.wav",
-  gameover: "./assets/audio/gameover.wav",
+  bgm: ["./assets/audio/bgm.mp3", "./assets/audio/bgm.wav"],
+  jump: ["./assets/audio/jump.mp3", "./assets/audio/jump.wav"],
+  boost: ["./assets/audio/boost.mp3", "./assets/audio/boost.wav"],
+  redbean: ["./assets/audio/redbean.mp3", "./assets/audio/redbean.wav"],
+  custard: ["./assets/audio/custard.mp3", "./assets/audio/custard.wav"],
+  bag: ["./assets/audio/bag.mp3", "./assets/audio/bag.wav"],
+  hurt: ["./assets/audio/hurt.mp3", "./assets/audio/hurt.wav"],
+  puddle: ["./assets/audio/puddle.mp3", "./assets/audio/puddle.wav"],
+  gameover: ["./assets/audio/gameover.mp3", "./assets/audio/gameover.wav"],
 };
 
 const state = {
@@ -76,6 +77,7 @@ const audio = {
   step: 0,
   elements: {},
   usingElements: false,
+  enabled: false,
 };
 
 [
@@ -348,6 +350,8 @@ function startAudio() {
   const context = getAudioContext();
   if (!context) return;
   if (context.state === "suspended") context.resume();
+  audio.enabled = true;
+  updateSoundButton();
   startMusic();
 }
 
@@ -356,9 +360,15 @@ function startElementAudio() {
   if (!bgm) return false;
 
   audio.usingElements = true;
+  audio.enabled = true;
   bgm.loop = true;
-  bgm.volume = 0.22;
-  bgm.play().catch(() => {});
+  bgm.muted = false;
+  bgm.volume = 0.42;
+  bgm.play().catch(() => {
+    audio.enabled = false;
+    updateSoundButton();
+  });
+  updateSoundButton();
   return true;
 }
 
@@ -366,10 +376,18 @@ function getAudioElement(name) {
   if (audio.elements[name]) return audio.elements[name];
   if (!AUDIO_FILES[name]) return null;
   const element = document.createElement("audio");
-  element.src = AUDIO_FILES[name];
+  element.src = getPreferredAudioSource(name);
   element.preload = "auto";
+  element.playsInline = true;
   audio.elements[name] = element;
   return element;
+}
+
+function getPreferredAudioSource(name) {
+  const sources = AUDIO_FILES[name];
+  if (!Array.isArray(sources)) return sources;
+  const probe = document.createElement("audio");
+  return probe.canPlayType && probe.canPlayType("audio/mpeg") ? sources[0] : sources[1];
 }
 
 function getAudioContext() {
@@ -403,6 +421,7 @@ function stopMusic() {
     bgm.pause();
     bgm.currentTime = 0;
   }
+  updateSoundButton();
 
   if (!audio.timer) return;
   window.clearInterval(audio.timer);
@@ -465,12 +484,36 @@ function playSfx(name) {
 }
 
 function playElementSfx(name) {
+  if (!audio.enabled && name !== "jump") return false;
   const source = getAudioElement(name);
   if (!source) return false;
   const sound = source.cloneNode();
-  sound.volume = name === "hurt" || name === "puddle" ? 0.42 : 0.52;
-  sound.play().catch(() => {});
+  sound.muted = false;
+  sound.volume = name === "hurt" || name === "puddle" ? 0.5 : 0.68;
+  sound.play().catch(() => {
+    audio.enabled = false;
+    updateSoundButton();
+  });
   return true;
+}
+
+function toggleSound() {
+  if (audio.enabled) {
+    audio.enabled = false;
+    stopMusic();
+    updateSoundButton();
+    return;
+  }
+
+  startAudio();
+  playElementSfx("jump");
+  updateSoundButton();
+}
+
+function updateSoundButton() {
+  if (!soundButton) return;
+  soundButton.textContent = audio.enabled ? "SOUND ON" : "SOUND";
+  soundButton.dataset.enabled = audio.enabled ? "true" : "false";
 }
 
 function playTone(freq, start, duration, type, destination, volume) {
@@ -761,6 +804,7 @@ scoreForm.addEventListener("submit", (event) => {
 });
 
 stateButton.addEventListener("click", toggleStateButton);
+if (soundButton) soundButton.addEventListener("click", toggleSound);
 bestStat.addEventListener("click", showRankingPanel);
 game.addEventListener("pointerdown", handleGamePress);
 game.addEventListener("click", handleGamePress);
