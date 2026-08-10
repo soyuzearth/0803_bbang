@@ -1,0 +1,15 @@
+{
+  "description": "Save Codex user prompts to prompt-logs/YYYY-MM-DD.md.",
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python .codex/hooks/prompt_log.py"
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -93,6 +93,26 @@ button.stat {
   font-size: clamp(15px, 3dvh, 22px);
 }
 
+.combo-stat {
+  transition: background 120ms ease, border-color 120ms ease, color 120ms ease;
+}
+
+.combo-stat.is-combo-pulse {
+  background: #fff0a8;
+  border-color: rgba(229, 119, 31, 0.76);
+  color: #7a3219;
+  animation: combo-pop 0.48s cubic-bezier(.2, 1.35, .28, 1);
+}
+
+.combo-stat.is-combo-pulse span {
+  color: #c04e26;
+}
+
+.combo-stat.is-combo-pulse strong {
+  color: #1f1712;
+  text-shadow: 0 2px 0 rgba(255, 255, 255, 0.8);
+}
+
 #lives {
   color: #e85d36;
   font-size: clamp(14px, 2.8dvh, 20px);
@@ -111,6 +131,30 @@ button.stat {
   box-shadow: none;
   touch-action: manipulation;
   user-select: none;
+}
+
+.game::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 18;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.game.feedback-good::after {
+  background: radial-gradient(circle at 34% 48%, rgba(255, 213, 99, 0.36), transparent 36%);
+  animation: feedback-flash 0.34s ease-out;
+}
+
+.game.feedback-score::after {
+  background: radial-gradient(circle at 24% 58%, rgba(255, 249, 226, 0.24), transparent 34%);
+  animation: feedback-flash 0.24s ease-out;
+}
+
+.game.feedback-danger::after {
+  background: rgba(216, 55, 36, 0.24);
+  animation: danger-flash 0.34s ease-out;
 }
 
 .map-art {
@@ -299,6 +343,61 @@ button.stat {
   animation: float-up 0.75s ease-out forwards;
 }
 
+.float-text.combo,
+.float-text.bonus {
+  left: 24%;
+  bottom: 50%;
+  color: #f05a2a;
+  font-size: clamp(26px, 7dvh, 44px);
+  text-shadow: 0 3px 0 #fff6d9, 0 8px 18px rgba(91, 39, 19, 0.22);
+  animation: float-combo 0.82s ease-out forwards;
+}
+
+.float-text.danger {
+  left: 18%;
+  bottom: 45%;
+  color: #ffffff;
+  font-size: clamp(24px, 6dvh, 38px);
+  text-shadow: 0 3px 0 #a7281d, 0 10px 18px rgba(91, 22, 12, 0.3);
+  animation: float-danger 0.72s ease-out forwards;
+}
+
+.burst {
+  position: absolute;
+  z-index: 28;
+  left: 50%;
+  top: 37%;
+  padding: 0.12em 0.38em 0.18em;
+  border-radius: 8px;
+  opacity: 0;
+  color: #fff7d4;
+  background: rgba(232, 93, 54, 0.9);
+  font-size: clamp(28px, 8dvh, 56px);
+  font-weight: 950;
+  line-height: 1;
+  text-align: center;
+  text-shadow: 0 3px 0 rgba(93, 40, 20, 0.44);
+  transform: translate(-50%, -50%) scale(0.82);
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+.burst.combo {
+  color: #3c2415;
+  background: linear-gradient(180deg, #fff3a8 0%, #ffbf4f 100%);
+  box-shadow: 0 8px 0 rgba(143, 75, 26, 0.58), 0 16px 34px rgba(92, 46, 20, 0.24);
+}
+
+.burst.danger {
+  color: #fff9f1;
+  background: linear-gradient(180deg, #ff6a4c 0%, #c72f28 100%);
+  box-shadow: 0 8px 0 rgba(111, 28, 26, 0.66), 0 16px 34px rgba(92, 24, 20, 0.26);
+}
+
+.burst.is-visible {
+  animation: burst-pop 0.62s cubic-bezier(.18, 1.35, .28, 1) forwards;
+}
+
 .overlay {
   position: absolute;
   inset: 0;
@@ -463,6 +562,67 @@ button.stat {
   }
 }
 
+@keyframes combo-pop {
+  0% {
+    transform: scale(1);
+  }
+  45% {
+    transform: scale(1.24) rotate(-2deg);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes feedback-flash {
+  0% {
+    opacity: 0;
+  }
+  35% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes danger-flash {
+  0% {
+    opacity: 0;
+    transform: translateX(0);
+  }
+  22% {
+    opacity: 1;
+    transform: translateX(-4px);
+  }
+  46% {
+    transform: translateX(4px);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(0);
+  }
+}
+
+@keyframes burst-pop {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.78) rotate(-3deg);
+  }
+  22% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1.14) rotate(1deg);
+  }
+  78% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -72%) scale(0.92);
+  }
+}
+
 @keyframes snowfall {
   from {
     transform: translate3d(0, 0, 0);
@@ -476,6 +636,39 @@ button.stat {
   to {
     opacity: 0;
     transform: translateY(-42px);
+  }
+}
+
+@keyframes float-combo {
+  0% {
+    opacity: 0;
+    transform: translateY(10px) scale(0.82);
+  }
+  24% {
+    opacity: 1;
+    transform: translateY(-8px) scale(1.12);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-58px) scale(1);
+  }
+}
+
+@keyframes float-danger {
+  0% {
+    opacity: 0;
+    transform: translateX(0) scale(0.9);
+  }
+  25% {
+    opacity: 1;
+    transform: translateX(-8px) scale(1.08);
+  }
+  55% {
+    transform: translateX(8px) scale(1.02);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-40px) scale(1);
   }
 }
 

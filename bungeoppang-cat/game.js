@@ -11,8 +11,10 @@ const stateButton = document.getElementById("stateButton");
 const bestStat = document.getElementById("bestStat");
 const livesEl = document.getElementById("lives");
 const scoreEl = document.getElementById("score");
+const comboStat = document.getElementById("comboStat");
 const comboEl = document.getElementById("combo");
 const bestEl = document.getElementById("best");
+const burst = document.getElementById("burst");
 
 const LABEL_JUMP = "\uC810\uD504";
 const LABEL_RESTART = "\uB2E4\uC2DC \uC2DC\uC791";
@@ -20,6 +22,8 @@ const LABEL_CUSTARD = "\uC288\uBD95";
 const LABEL_HOT = "\uC544\uB728\uB728!";
 const LABEL_LIFE = "\uBAA9\uC228 -1";
 const LABEL_BAG = "\uBD09\uC9C0 2x!";
+const LABEL_REDBEAN = "\uD31F\uBD95";
+const LABEL_PUDDLE = "\uBB3C\uC6C5\uB369\uC774!";
 const LIFE_FULL = "\uD83D\uDC31";
 const LIFE_EMPTY = "\u00B7";
 const CAT_RUN_CLASS = "cat-runner";
@@ -284,32 +288,39 @@ function insetRect(rect, amount) {
 
 function handleHit(item, now) {
   if (item.type === "bad" || item.type === "puddle") {
-    loseLife(now);
+    loseLife(now, item.type);
     return;
   }
 
   if (item.type === "bag") {
     state.doubleUntil = now + 8000;
-    showFloat(LABEL_BAG);
+    showFloat(LABEL_BAG, "bonus");
+    showBurst(LABEL_BAG, "combo");
+    pulseCombo();
+    pulseGame("good");
     updateHud();
     return;
   }
 
-  const multiplier = state.doubleUntil && now < state.doubleUntil ? 2 : 1;
-  const points = (item.type === "custard" ? 30 * state.combo : 10 * state.combo) * multiplier;
+  const multiplier = getScoreMultiplier(now);
+  const points = (item.type === "custard" ? 30 : 10) * multiplier;
   state.score += points;
 
   if (item.type === "custard") {
     state.combo += 1;
-    showFloat(`${LABEL_CUSTARD} x${state.combo}!`);
+    showFloat(`${LABEL_CUSTARD} x${getScoreMultiplier(now)}!`, "combo");
+    showBurst(`${LABEL_CUSTARD} x${getScoreMultiplier(now)}!`, "combo");
+    pulseCombo();
+    pulseGame("good");
   } else {
-    showFloat(`+${points}`);
+    showFloat(`${LABEL_REDBEAN} +${points}`, "score");
+    pulseGame("score");
   }
 
   updateHud();
 }
 
-function loseLife(now) {
+function loseLife(now, type = "bad") {
   if (state.invincibleUntil && now < state.invincibleUntil) return;
 
   state.lives -= 1;
@@ -317,7 +328,9 @@ function loseLife(now) {
   state.invincibleUntil = now + 1200;
   state.hitVisualUntil = now + 260;
   cat.classList.add("is-hit");
-  showFloat(LABEL_LIFE);
+  showFloat(type === "puddle" ? LABEL_PUDDLE : LABEL_HOT, "danger");
+  showBurst(type === "puddle" ? LABEL_PUDDLE : LABEL_LIFE, "danger");
+  pulseGame("danger");
   updateHud();
 
   if (state.lives <= 0) {
@@ -325,12 +338,35 @@ function loseLife(now) {
   }
 }
 
-function showFloat(text) {
+function showFloat(text, kind = "score") {
   const el = document.createElement("div");
-  el.className = "float-text";
+  el.className = `float-text ${kind}`;
   el.textContent = text;
   game.appendChild(el);
   setTimeout(() => el.remove(), 760);
+}
+
+function showBurst(text, kind) {
+  burst.textContent = text;
+  burst.className = `burst ${kind} is-visible`;
+  window.setTimeout(() => {
+    burst.classList.remove("is-visible");
+  }, 620);
+}
+
+function pulseCombo() {
+  comboStat.classList.remove("is-combo-pulse");
+  void comboStat.offsetWidth;
+  comboStat.classList.add("is-combo-pulse");
+}
+
+function pulseGame(kind) {
+  game.classList.remove("feedback-good", "feedback-score", "feedback-danger");
+  void game.offsetWidth;
+  game.classList.add(`feedback-${kind}`);
+  window.setTimeout(() => {
+    game.classList.remove(`feedback-${kind}`);
+  }, 360);
 }
 
 function endGame() {
@@ -406,8 +442,13 @@ function setCatSprite(name) {
 function updateHud() {
   livesEl.textContent = LIFE_FULL.repeat(Math.max(state.lives, 0)) + LIFE_EMPTY.repeat(Math.max(3 - state.lives, 0));
   scoreEl.textContent = state.score;
-  comboEl.textContent = state.doubleUntil ? `x${state.combo}\u00B72` : `x${state.combo}`;
+  comboEl.textContent = `x${getScoreMultiplier(performance.now())}`;
   bestEl.textContent = state.best;
+}
+
+function getScoreMultiplier(now) {
+  const bagMultiplier = state.doubleUntil && now < state.doubleUntil ? 2 : 1;
+  return state.combo * bagMultiplier;
 }
 
 function getRanking() {
