@@ -1,0 +1,13 @@
+{
+  "cleanUrls": true,
+  "rewrites": [
+    {
+      "source": "/",
+      "destination": "/bungeoppang-cat/index.html"
+    },
+    {
+      "source": "/:path*",
+      "destination": "/bungeoppang-cat/:path*"
+    }
+  ]
+}
